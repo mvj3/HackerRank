@@ -2,7 +2,8 @@
 
 """
 Matrix
-Your Matrix submission got 61.25 points.  
+Your Matrix submission got 70.00 points.  
+Proceed to Interview Preparation Kit
 Problem
 Submissions
 Leaderboard
@@ -15,6 +16,7 @@ Each of the roads takes an amount of time to destroy, and only one can be worked
 For example, there are  cities called . Three of them have machines and are colored red. The time to destroy is shown next to each road. If we cut the two green roads, there are no paths between any two machines. The time required is .
 
 image
+
 Function Description
 
 Complete the function minTime in the editor below. It must return an integer representing the minimum time to cut off access between the machines.
@@ -64,8 +66,7 @@ import re
 import sys
 
 # Complete the minTime function below.
-# TODO time out, need to be improved. Got 61.25/70 score.
-def minTime_timeout(roads, machines):
+def minTime(roads, machines):
     """
     The goal is to separating all red nodes(machine) into isolated graphs.
     """
@@ -76,36 +77,44 @@ def minTime_timeout(roads, machines):
         connections[r[0]].add(r[1])
         connections[r[1]].add(r[0])
     #print("connections=", connections)
-    broken_roads = set()
+    ignore_roads = set()  # contains both broken and valid roads
     times = 0
-    
     def exists_a_machine(orig, visited):
         #print("orig=", orig, ", visited=", visited)
         # if the node is alread a machine, then we don't have to look further
         if orig in machines:  
             return True
         neighbours = [orig]
+        paths = []
         while neighbours:
             tmp  = []
             for i1 in neighbours:
                 for i2 in connections[i1]:
+                    path = (min([i1, i2]), max([i1, i2]))
+                    #if path in ignore_roads:
+                    #    continue
                     # 0. check if visited or broken
-                    if (i2 in visited) or ((min([i1, i2]), max([i1, i2])) in broken_roads):
+                    if (i2 in visited) or (path in ignore_roads):
                         continue
                     # 1. check if there's a machine
                     if i2 in machines:
                         #print("...find a machine=", i2)
                         return True
+                    paths.append(path)
                     visited.add(i2)
                     tmp.append(i2)
             # 2. begin next round
             neighbours = tmp
+        # Here we return False, it means that we already know this side of nodes have no machine, so we just ignore them all.
+        [ignore_roads.add(path) for path in paths]
         return False
     
     # and start from min-time road, to check if there are machine in its both sides.
     for road in sorted(roads, key=lambda r: r[2]):  # sort roads by their time
         #print("\nroad=", road[0:2], "weight=", road[2])
         [c1, c2, time] = road
+        if (min([c1, c2]), max([c1, c2])) in ignore_roads:
+            continue
 
         left_yes = exists_a_machine(c1, set([c2]))
         right_yes = exists_a_machine(c2, set([c1]))
@@ -114,7 +123,7 @@ def minTime_timeout(roads, machines):
         if left_yes and right_yes: # we have to separate them by cutting this road
             broken_road = (min([c1, c2]), max([c1, c2]))
             #print("!!!broken_road=", broken_road)
-            broken_roads.add(broken_road)
+            ignore_roads.add(broken_road)
             times += time
     return times    
         
