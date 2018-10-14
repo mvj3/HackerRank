@@ -65,11 +65,16 @@ import random
 import re
 import sys
 
+"""
+It took me about 3 hours to pass this challenge. The basic idea is to separating all the red nodes (machine) into isolated graphs.
+
+The strategy is that find a lowest weight edge, if the left and right side of this edge both contain machines, then cut it off, and loop this strategy again and again, until we traverse all the edges.
+
+The optimization part is that if we find one side of edge has no machine, then we could ignore all the edges in that side later, this will definitely increase the performance a lot.
+"""
+
 # Complete the minTime function below.
 def minTime(roads, machines):
-    """
-    The goal is to separating all red nodes(machine) into isolated graphs.
-    """
     machines = set(machines)
     #print("machines=", machines)
     connections = {num: set() for road in roads for num in road[0:2]}
